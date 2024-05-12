@@ -24,10 +24,10 @@ import java.util.UUID;
 public class ChallengeUtil {
 
     public static boolean isPokemonPartOfChallenge(PokemonEntity pokemonEntity) {
-        if (pokemonEntity.getBattleId().get().isEmpty()) {
+        if (!pokemonEntity.isBattling() || pokemonEntity.getBattleId() == null) {
             return false;
         }
-        UUID battleId = pokemonEntity.getBattleId().get().get();
+        UUID battleId = pokemonEntity.getBattleId();
         for (PokemonBattle battle : ChallengeBattleBuilder.challengeBattles) {
             if (battleId.equals(battle.getBattleId())) {
                 return true;
@@ -37,10 +37,10 @@ public class ChallengeUtil {
     }
 
     public static PokemonBattle getAssociatedBattle(PokemonEntity pokemonEntity) {
-        if (pokemonEntity.getBattleId().get().isEmpty()) {
+        if (!pokemonEntity.isBattling() || pokemonEntity.getBattleId() == null) {
             return null;
         }
-        UUID battleId = pokemonEntity.getBattleId().get().get();
+        UUID battleId = pokemonEntity.getBattleId();
         for (PokemonBattle battle : ChallengeBattleBuilder.challengeBattles) {
             if (battleId.equals(battle.getBattleId())) {
                 return battle;
