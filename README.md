@@ -22,7 +22,7 @@ There are four possible challenge properties:
 ```/challenge <username> noPreview``` - Challenges specified player to a default battle with no preview of the rivals pokemon during starter selection.
 
 ##### Command Input Order:
-  There are 12 possible input combinations for challenge properties. The order of input must be <username> -> <level or min/maxLevel> -> <handicap> -> <noPreview>. If the challenge property is optional you may skip it when inputting the command. The default values will be used.
+  There are 12 possible input combinations for challenge properties. The order of input must be username -> level or min/maxLevel -> handicap -> noPreview. If the challenge property is optional you may skip it when inputting the command. The default values will be used.
 
 ##### All Possible Commands:
 
