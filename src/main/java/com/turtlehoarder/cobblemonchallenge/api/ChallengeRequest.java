@@ -6,11 +6,7 @@ public record ChallengeRequest (
         String id,
         ServerPlayer challengerPlayer,
         ServerPlayer challengedPlayer,
-        int minLevel,
-        int maxLevel,
-        int handicapP1,
-        int handicapP2,
-        boolean preview,
+        ChallengeProperties properties,
         long createdTime
 ) {
 

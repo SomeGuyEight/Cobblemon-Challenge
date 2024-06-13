@@ -63,10 +63,10 @@ public class LeadPokemonSelectionSession {
     }
 
     private void beginBattle() {
-        int minLevel = originRequest.minLevel();
-        int maxLevel = originRequest.maxLevel();
-        int handicapP1 = originRequest.handicapP1();
-        int handicapP2 = originRequest.handicapP2();
+        int minLevel = originRequest.properties().getMinLevel();
+        int maxLevel = originRequest.properties().getMaxLevel();
+        int handicapP1 = originRequest.properties().getHandicapP1();
+        int handicapP2 = originRequest.properties().getHandicapP2();
         SESSIONS_TO_CANCEL.add(this);
         challengerMenuProvider.forceCloseMenu();
         challengedMenuProvider.forceCloseMenu();
@@ -78,8 +78,8 @@ public class LeadPokemonSelectionSession {
         }
     }
 
-    public boolean teamPreviewOn() {
-        return originRequest.preview();
+    public boolean isShowTeamPreview() {
+        return originRequest.properties().getShowPreview();
     }
 
     private boolean isBattleReady() {

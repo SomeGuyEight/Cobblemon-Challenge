@@ -45,7 +45,7 @@ public class LeadPokemonMenuProvider implements MenuProvider {
     private LeadPokemonMenu openedMenu;
     public List<Integer> selectedSlots = new ArrayList<Integer>();
 
-    private ChallengeRequest request;
+    private final ChallengeRequest request;
 
     public LeadPokemonMenuProvider(LeadPokemonSelectionSession wrapper, ServerPlayer selector, ServerPlayer rivalPlayer, ChallengeRequest request) {
         this.selector = selector;
@@ -72,8 +72,8 @@ public class LeadPokemonMenuProvider implements MenuProvider {
         PartyStore p2Party = Cobblemon.INSTANCE.getStorage().getParty(rival);
 
         setupGlassFiller(leadPokemonMenu);
-        int handicapP1 = (this.selector == request.challengerPlayer()) ? request.handicapP1() : request.handicapP2();
-        int handicapP2 = (this.selector == request.challengerPlayer()) ? request.handicapP2() : request.handicapP1();
+        int handicapP1 = (this.selector == request.challengerPlayer()) ? request.properties().getHandicapP1() : request.properties().getHandicapP2();
+        int handicapP2 = (this.selector == request.challengerPlayer()) ? request.properties().getHandicapP2() : request.properties().getHandicapP1();
 
         for (int x = 0; x < p1Party.size(); x ++) {
             int itemSlot = x * 9; // Lefthand column of the menu
@@ -81,7 +81,7 @@ public class LeadPokemonMenuProvider implements MenuProvider {
             if (pokemon == null) // Skip any empty slots in the pokemon team
                 continue;
             BattlePokemon copy = BattlePokemon.Companion.safeCopyOf(pokemon);
-            int adjustedLevelP1 = ChallengeUtil.getBattlePokemonAdjustedLevel(pokemon.getLevel(), request.minLevel(), request.maxLevel(), handicapP1);
+            int adjustedLevelP1 = ChallengeUtil.getBattlePokemonAdjustedLevel(pokemon.getLevel(), request.properties().getMinLevel(), request.properties().getMaxLevel(), handicapP1);
             pokemon = ChallengeUtil.applyFormatTransformations(ChallengeFormat.STANDARD_6V6, copy, adjustedLevelP1).getEffectedPokemon(); // Apply battle transformations to each pokemon
             ItemStack pokemonItem = PokemonItem.from(pokemon, 1);
             pokemonItem.setHoverName(Component.literal(ChatFormatting.AQUA + String.format("%s (lvl%d)", pokemon.getDisplayName().getString(), adjustedLevelP1)));
@@ -97,9 +97,9 @@ public class LeadPokemonMenuProvider implements MenuProvider {
             if (pokemon == null) {
                 continue;
             }
-            if (selectionSession.teamPreviewOn()) {
+            if (selectionSession.isShowTeamPreview()) {
                 ItemStack pokemonItem = PokemonItem.from(pokemon, 1);
-                int adjustedLevelP2 = ChallengeUtil.getBattlePokemonAdjustedLevel(pokemon.getLevel(), request.minLevel(), request.maxLevel(), handicapP2);
+                int adjustedLevelP2 = ChallengeUtil.getBattlePokemonAdjustedLevel(pokemon.getLevel(), request.properties().getMinLevel(), request.properties().getMaxLevel(), handicapP2);
                 pokemonItem.setHoverName(Component.literal(ChatFormatting.RED + String.format("%s's %s (lvl%d)", rival.getDisplayName().getString(), pokemon.getDisplayName().getString(), adjustedLevelP2)));
                 leadPokemonMenu.setItem(itemSlot, leadPokemonMenu.getStateId(), pokemonItem);
             } else {

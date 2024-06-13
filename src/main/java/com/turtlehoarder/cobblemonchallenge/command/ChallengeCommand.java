@@ -323,7 +323,7 @@ public class ChallengeCommand {
 
             String levelComponent = (minLevel == maxLevel) ? ChatFormatting.YELLOW + String.format("You have been challenged to a " + ChatFormatting.BOLD + "level %d Pokemon battle", maxLevel) : ChatFormatting.YELLOW + String.format("You have been challenged to a " + ChatFormatting.BOLD + "level %d - %d Pokemon battle", minLevel, maxLevel);
             String challengerComponent = ChatFormatting.YELLOW + " by " + challengerPlayer.getDisplayName().getString() + "!";
-            String optionsComponent = request.preview() ? "" : ChatFormatting.GOLD + " [NoTeamPreview]";
+            String optionsComponent = request.properties().getShowPreview() ? "" : ChatFormatting.GOLD + " [NoTeamPreview]";
             String handicapComponent = (handicapP1 == 0 && handicapP2 == 0) ? "" : ChatFormatting.GREEN + " [" + challengerPlayer.getDisplayName().getString() + " handicap of " + handicapP1 + "] [" + challengedPlayer.getDisplayName().getString() + " handicap of " + handicapP2 + "]";
             MutableComponent notificationComponent = Component.literal(levelComponent + challengerComponent + optionsComponent + handicapComponent);
 

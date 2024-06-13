@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.turtlehoarder.cobblemonchallenge.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "pvp1v1PreBattleBuilderMixin",
+    "pvePreBattleBuilderMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

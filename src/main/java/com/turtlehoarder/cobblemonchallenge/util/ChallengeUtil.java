@@ -7,6 +7,7 @@ import com.cobblemon.mod.common.battles.pokemon.BattlePokemon;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.util.LocalizationUtilsKt;
+import com.turtlehoarder.cobblemonchallenge.api.ChallengeProperties;
 import com.turtlehoarder.cobblemonchallenge.api.ChallengeRequest;
 import com.turtlehoarder.cobblemonchallenge.battle.ChallengeBattleBuilder;
 import com.turtlehoarder.cobblemonchallenge.battle.ChallengeFormat;
@@ -57,9 +58,9 @@ public class ChallengeUtil {
         return player.getServer().getPlayerList().getPlayer(player.getUUID()) != null;
     }
 
-    public static ChallengeRequest createChallengeRequest(ServerPlayer challengerPlayer, ServerPlayer challengedPlayer, int minLevel, int maxLevel, int handicapP1, int handicapP2, boolean preview) {
+    public static ChallengeRequest createChallengeRequest(ServerPlayer challengerPlayer, ServerPlayer challengedPlayer, int minLevel, int maxLevel, int handicapP1, int handicapP2, boolean showPreview) {
         String key = UUID.randomUUID().toString().replaceAll("-", "");
-        return new ChallengeRequest(key, challengerPlayer, challengedPlayer, minLevel, maxLevel, handicapP1, handicapP2, preview, System.currentTimeMillis());
+        return new ChallengeRequest(key, challengerPlayer, challengedPlayer, new ChallengeProperties(minLevel, maxLevel, handicapP1, handicapP2, showPreview), System.currentTimeMillis());
     }
 
     public static ItemLike getDisplayBlockForPokemon(Pokemon pokemon) {
