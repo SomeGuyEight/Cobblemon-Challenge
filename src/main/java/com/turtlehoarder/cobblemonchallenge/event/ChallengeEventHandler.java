@@ -161,7 +161,7 @@ public class ChallengeEventHandler {
                     UUID foundplayerUUID = ChallengeUtil.getOwnerUuidOfClonedPokemon(pb, pokemonEntity);
                     UUID playerUUID = (foundplayerUUID != null ? foundplayerUUID : new UUID(0,0));
                     FakePlayerPartyStore fakePlayerStore = new FakePlayerPartyStore(playerUUID);
-                    PokemonStore<StorePosition> fakePokemonStore = new FakePokemonStore<StorePosition>(fakePlayerStore,playerUUID);
+                    PokemonStore<StorePosition> fakePokemonStore = new FakePokemonStore<FakePartyPosition>(fakePlayerStore,playerUUID);
                     pokemonEntity.getPokemon().getStoreCoordinates().set(new StoreCoordinates<>(fakePokemonStore, new FakePartyPosition()));
                     pokemonEntity.getBusyLocks().add("Cloned_Pokemon"); // Busy lock prevents others from interacting with cloned pokemon
                 }
@@ -173,7 +173,7 @@ public class ChallengeEventHandler {
         CobblemonChallenge.LOGGER.debug("Performing Server Shutdown tasks for Cobblemon Challenge");
         if (!ChallengeBattleBuilder.clonedPokemonList.isEmpty()) {
             CobblemonChallenge.LOGGER.debug(String.format("Cloned pokemon (%d) from challenges detected. Removing all before server shuts down", ChallengeBattleBuilder.clonedPokemonList.size()));
-            ArrayList<PokemonEntity> clonedPokemonCopyList = new ArrayList<>(ChallengeBattleBuilder.clonedPokemonList); // Create a copy since other list may be altered by despawn events
+            ArrayList<PokemonEntity> clonedPokemonCopyList = new ArrayList<PokemonEntity>(ChallengeBattleBuilder.clonedPokemonList); // Create a copy since other list may be altered by despawn events
             clonedPokemonCopyList.forEach(pokemonEntity -> pokemonEntity.remove(Entity.RemovalReason.DISCARDED));
             clonedPokemonCopyList.clear();
         }

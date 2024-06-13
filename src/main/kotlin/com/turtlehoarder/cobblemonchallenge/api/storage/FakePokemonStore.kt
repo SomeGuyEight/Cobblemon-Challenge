@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.nbt.CompoundTag
 import java.util.*
 
-class FakePokemonStore<position:StorePosition>(
+class FakePokemonStore<FakePartyPosition>(
     private val playerStore : FakePlayerPartyStore,
     /** The UUID of the store. The exact uniqueness requirements depend on the method used for saving. */
     override val uuid: UUID = playerStore.playerUUID
