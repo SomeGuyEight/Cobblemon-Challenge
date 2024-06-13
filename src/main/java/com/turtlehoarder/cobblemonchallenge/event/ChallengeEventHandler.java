@@ -3,13 +3,14 @@ package com.turtlehoarder.cobblemonchallenge.event;
 import com.turtlehoarder.cobblemonchallenge.CobblemonChallenge;
 import com.turtlehoarder.cobblemonchallenge.api.ChallengeRequest;
 import com.turtlehoarder.cobblemonchallenge.api.LeadPokemonSelection;
+import com.turtlehoarder.cobblemonchallenge.api.storage.FakePokemonStore;
+import com.turtlehoarder.cobblemonchallenge.api.storage.party.FakePartyPosition;
+import com.turtlehoarder.cobblemonchallenge.api.storage.party.FakePlayerPartyStore;
 import com.turtlehoarder.cobblemonchallenge.battle.ChallengeBattleBuilder;
 import com.turtlehoarder.cobblemonchallenge.command.ChallengeCommand;
 import com.turtlehoarder.cobblemonchallenge.config.ChallengeConfig;
 import com.turtlehoarder.cobblemonchallenge.gui.LeadPokemonSelectionSession;
 import com.turtlehoarder.cobblemonchallenge.util.ChallengeUtil;
-import com.turtlehoarder.cobblemonchallenge.util.FakeStore;
-import com.turtlehoarder.cobblemonchallenge.util.FakeStorePosition;
 
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.CobblemonNetwork;
@@ -40,19 +41,10 @@ public class ChallengeEventHandler {
         registerPostVictoryEvent();
         registerChallengeLootPrevention();
         registerCobblemonSavePrevention();
-        ServerEntityEvents.ENTITY_LOAD.register((entity, server) -> {
-            checkSpawn(entity);
-        });
-        ServerPlayConnectionEvents.DISCONNECT.register((event, server) -> {
-            onPlayerLoggedOut(event.getPlayer());
-        });
-
-        ServerLifecycleEvents.SERVER_STOPPING.register((server) -> {
-            onServerShutdown();
-        });
-
+        ServerEntityEvents.ENTITY_LOAD.register((entity, server) -> checkSpawn(entity));
+        ServerPlayConnectionEvents.DISCONNECT.register((event, server) -> onPlayerLoggedOut(event.getPlayer()));
+        ServerLifecycleEvents.SERVER_STOPPING.register((server) -> onServerShutdown());
         ServerTickEvents.END_SERVER_TICK.register(ChallengeEventHandler::onServerTick);
-
     }
 
     /*
@@ -164,22 +156,15 @@ public class ChallengeEventHandler {
                 CobblemonChallenge.LOGGER.debug(String.format("Entity Joined already in battle: %s | Battle id %s", entity.getDisplayName().getString(), pokemonEntity.getBattleId()));
                 ChallengeBattleBuilder.clonedPokemonList.add(pokemonEntity);
                 // Trick Cobblemon into thinking the clones are *not* wild pokemon. This will prevent duplicates being caught if something unexpected happens to the battle, like /stopbattle or a server crash
-                UUID foundplayerUUID = null;
                 PokemonBattle pb = ChallengeUtil.getAssociatedBattle(pokemonEntity);
                 if (pb != null) {
-                    foundplayerUUID = ChallengeUtil.getOwnerUuidOfClonedPokemon(pb, pokemonEntity);
-                }
-                if (pb != null) {
+                    UUID foundplayerUUID = ChallengeUtil.getOwnerUuidOfClonedPokemon(pb, pokemonEntity);
                     UUID playerUUID = (foundplayerUUID != null ? foundplayerUUID : new UUID(0,0));
-                    FakeStore fakeStore = new FakeStore(playerUUID);
-                    // World's worst casting. Don't do this at home.
-                    PokemonStore<StorePosition> fakePartyStore = (PokemonStore<StorePosition>)(PokemonStore<?>) fakeStore;
-                    pokemonEntity.getPokemon().getStoreCoordinates().set(new StoreCoordinates<>(fakePartyStore, new FakeStorePosition()));
+                    FakePlayerPartyStore fakePlayerStore = new FakePlayerPartyStore(playerUUID);
+                    PokemonStore<StorePosition> fakePokemonStore = new FakePokemonStore<StorePosition>(fakePlayerStore,playerUUID);
+                    pokemonEntity.getPokemon().getStoreCoordinates().set(new StoreCoordinates<>(fakePokemonStore, new FakePartyPosition()));
                     pokemonEntity.getBusyLocks().add("Cloned_Pokemon"); // Busy lock prevents others from interacting with cloned pokemon
                 }
-
-
-
             }
         }
     }
@@ -188,7 +173,7 @@ public class ChallengeEventHandler {
         CobblemonChallenge.LOGGER.debug("Performing Server Shutdown tasks for Cobblemon Challenge");
         if (!ChallengeBattleBuilder.clonedPokemonList.isEmpty()) {
             CobblemonChallenge.LOGGER.debug(String.format("Cloned pokemon (%d) from challenges detected. Removing all before server shuts down", ChallengeBattleBuilder.clonedPokemonList.size()));
-            ArrayList<PokemonEntity> clonedPokemonCopyList = new ArrayList<PokemonEntity>(ChallengeBattleBuilder.clonedPokemonList); // Create a copy since other list may be altered by despawn events
+            ArrayList<PokemonEntity> clonedPokemonCopyList = new ArrayList<>(ChallengeBattleBuilder.clonedPokemonList); // Create a copy since other list may be altered by despawn events
             clonedPokemonCopyList.forEach(pokemonEntity -> pokemonEntity.remove(Entity.RemovalReason.DISCARDED));
             clonedPokemonCopyList.clear();
         }
