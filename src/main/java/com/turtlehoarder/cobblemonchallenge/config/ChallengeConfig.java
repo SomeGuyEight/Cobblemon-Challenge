@@ -10,7 +10,7 @@ public class ChallengeConfig {
     public static int MAX_CHALLENGE_DISTANCE;
     public static int DEFAULT_CHALLENGE_LEVEL;
     public static int DEFAULT_HANDICAP;
-    public static boolean DEFAULT_SHOW_PREVIEW;
+    public static Boolean DEFAULT_SHOW_PREVIEW;
     public static int REQUEST_EXPIRATION_MILLIS;
     public static int CHALLENGE_COOLDOWN_MILLIS;
 
