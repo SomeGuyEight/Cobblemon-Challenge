@@ -1,5 +1,16 @@
 package com.turtlehoarder.cobblemonchallenge.event;
 
+import com.turtlehoarder.cobblemonchallenge.CobblemonChallenge;
+import com.turtlehoarder.cobblemonchallenge.api.ChallengeRequest;
+import com.turtlehoarder.cobblemonchallenge.api.LeadPokemonSelection;
+import com.turtlehoarder.cobblemonchallenge.battle.ChallengeBattleBuilder;
+import com.turtlehoarder.cobblemonchallenge.command.ChallengeCommand;
+import com.turtlehoarder.cobblemonchallenge.config.ChallengeConfig;
+import com.turtlehoarder.cobblemonchallenge.gui.LeadPokemonSelectionSession;
+import com.turtlehoarder.cobblemonchallenge.util.ChallengeUtil;
+import com.turtlehoarder.cobblemonchallenge.util.FakeStore;
+import com.turtlehoarder.cobblemonchallenge.util.FakeStorePosition;
+
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.CobblemonNetwork;
 import com.cobblemon.mod.common.api.Priority;
@@ -9,16 +20,7 @@ import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.storage.*;
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.net.messages.client.storage.party.SetPartyReferencePacket;
-import com.turtlehoarder.cobblemonchallenge.CobblemonChallenge;
 
-import com.turtlehoarder.cobblemonchallenge.battle.ChallengeBattleBuilder;
-import com.turtlehoarder.cobblemonchallenge.command.ChallengeCommand;
-import com.turtlehoarder.cobblemonchallenge.config.ChallengeConfig;
-import com.turtlehoarder.cobblemonchallenge.gui.LeadPokemonSelectionSession;
-import com.turtlehoarder.cobblemonchallenge.util.ChallengeUtil;
-import com.turtlehoarder.cobblemonchallenge.util.FakeStore;
-import com.turtlehoarder.cobblemonchallenge.util.FakeStorePosition;
-import kotlin.Unit;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -30,6 +32,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 import java.util.*;
+import kotlin.Unit;
 
 public class ChallengeEventHandler {
 
@@ -56,7 +59,7 @@ public class ChallengeEventHandler {
         Since this plugin uses cloned pokemon in its battles, there will be a *cloned* pokemon left behind after the battle is complete. These
         events ensure that these cloned entities are tracked and removed when a battle ends via Victory, disconnect, or server shutdown
      */
-    public static boolean registerPostVictoryEvent() {
+    public static void registerPostVictoryEvent() {
         CobblemonEvents.BATTLE_VICTORY.subscribe(Priority.NORMAL, (battleVictoryEvent) -> {
             CobblemonChallenge.LOGGER.debug("Battle victory!");
             UUID battleId = battleVictoryEvent.getBattle().getBattleId();
@@ -103,7 +106,6 @@ public class ChallengeEventHandler {
             }
             return Unit.INSTANCE;
         });
-        return true;
     }
 
     // Prevent Challenge-mons from being saved to the world to prevent odd scenarios where duplicates can be spawned and re-caught
@@ -197,10 +199,10 @@ public class ChallengeEventHandler {
         int tickCount = server.getTickCount();
         if (tickCount % 20 == 0) {
             long nowTime = System.currentTimeMillis();
-            Iterator<Map.Entry<String, ChallengeCommand.ChallengeRequest>> requestIterator = ChallengeCommand.CHALLENGE_REQUESTS.entrySet().iterator();
+            Iterator<Map.Entry<String, ChallengeRequest>> requestIterator = ChallengeCommand.CHALLENGE_REQUESTS.entrySet().iterator();
             while (requestIterator.hasNext()) {
-                Map.Entry<String, ChallengeCommand.ChallengeRequest> requestMap = requestIterator.next();
-                ChallengeCommand.ChallengeRequest request = requestMap.getValue();
+                Map.Entry<String, ChallengeRequest> requestMap = requestIterator.next();
+                ChallengeRequest request = requestMap.getValue();
                 if (request.createdTime() + ChallengeConfig.REQUEST_EXPIRATION_MILLIS < nowTime) {
                     if (ChallengeUtil.isPlayerOnline(request.challengedPlayer())) {
                         request.challengedPlayer().displayClientMessage(Component.literal(ChatFormatting.RED + String.format("Challenge from %s has expired", request.challengerPlayer().getDisplayName().getString())), false);
@@ -211,7 +213,7 @@ public class ChallengeEventHandler {
                     requestIterator.remove();
                 }
             }
-            Iterator<Map.Entry<UUID, ChallengeCommand.LeadPokemonSelection>> selectionIterator = ChallengeCommand.ACTIVE_SELECTIONS.entrySet().iterator();
+            Iterator<Map.Entry<UUID, LeadPokemonSelection>> selectionIterator = ChallengeCommand.ACTIVE_SELECTIONS.entrySet().iterator();
             while (selectionIterator.hasNext()) {
                 LeadPokemonSelectionSession selectionSession = selectionIterator.next().getValue().selectionWrapper();
                 selectionSession.doTick();
