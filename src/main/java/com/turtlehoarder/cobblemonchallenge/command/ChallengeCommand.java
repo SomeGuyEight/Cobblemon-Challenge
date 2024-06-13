@@ -9,6 +9,7 @@ import com.turtlehoarder.cobblemonchallenge.util.ChallengeUtil;
 import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.battles.BattleRegistry;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.Command;
@@ -36,6 +37,7 @@ public class ChallengeCommand {
     private static final boolean USE_DISTANCE_RESTRICTION = ChallengeConfig.CHALLENGE_DISTANCE_RESTRICTION;
     private static final int DEFAULT_LEVEL = ChallengeConfig.DEFAULT_CHALLENGE_LEVEL;
     private static final int DEFAULT_HANDICAP = ChallengeConfig.DEFAULT_HANDICAP;
+    private static final boolean DEFAULT_SHOW_PREVIEW = ChallengeConfig.DEFAULT_SHOW_PREVIEW;
     private static final int CHALLENGE_COOLDOWN = ChallengeConfig.CHALLENGE_COOLDOWN_MILLIS;
     public static HashMap<String, ChallengeRequest> CHALLENGE_REQUESTS = new HashMap<>();
     public static final HashMap<UUID, LeadPokemonSelection> ACTIVE_SELECTIONS = new HashMap<>();
@@ -65,7 +67,7 @@ public class ChallengeCommand {
         // (default everything)
         LiteralArgumentBuilder<CommandSourceStack> defaultChallengeProperties = Commands.literal("challenge")
                 .then(Commands.argument("player", EntityArgument.player())
-                        .executes(c -> challengePlayer(c, DEFAULT_LEVEL, DEFAULT_LEVEL, DEFAULT_HANDICAP, DEFAULT_HANDICAP, true))
+                        .executes(c -> challengePlayer(c, DEFAULT_LEVEL, DEFAULT_LEVEL, DEFAULT_HANDICAP, DEFAULT_HANDICAP, DEFAULT_SHOW_PREVIEW))
                 );
 
         // handicap
@@ -74,7 +76,7 @@ public class ChallengeCommand {
                         .then(Commands.literal("handicap")
                                 .then(Commands.argument("self", IntegerArgumentType.integer(-99,99))
                                         .then(Commands.argument("rival", IntegerArgumentType.integer(-99,99))
-                                                .executes(c -> challengePlayer(c,  DEFAULT_LEVEL, DEFAULT_LEVEL, IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), true))
+                                                .executes(c -> challengePlayer(c,  DEFAULT_LEVEL, DEFAULT_LEVEL, IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), DEFAULT_SHOW_PREVIEW))
                                         )
                                 )
                         )
@@ -83,8 +85,10 @@ public class ChallengeCommand {
         // no preview
         LiteralArgumentBuilder<CommandSourceStack> noPreviewChallengeProperties = Commands.literal("challenge")
                 .then(Commands.argument("player", EntityArgument.player())
-                        .then(Commands.literal("no-preview")
-                                .executes(c -> challengePlayer(c, DEFAULT_LEVEL, DEFAULT_LEVEL, DEFAULT_HANDICAP, DEFAULT_HANDICAP, false))
+                        .then(Commands.literal("showPreview")
+                                .then(Commands.argument("show",BoolArgumentType.bool())
+                                        .executes(c -> challengePlayer(c, DEFAULT_LEVEL, DEFAULT_LEVEL, DEFAULT_HANDICAP, DEFAULT_HANDICAP, BoolArgumentType.getBool(c, "show")))
+                                )
                         )
                 );
 
@@ -94,8 +98,10 @@ public class ChallengeCommand {
                         .then(Commands.literal("handicap")
                                 .then(Commands.argument("self", IntegerArgumentType.integer(-99,99))
                                         .then(Commands.argument("rival", IntegerArgumentType.integer(-99,99))
-                                                .then(Commands.literal("no-preview")
-                                                        .executes(c -> challengePlayer(c,  DEFAULT_LEVEL, DEFAULT_LEVEL, IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), false))
+                                                .then(Commands.literal("showPreview")
+                                                        .then(Commands.argument("show",BoolArgumentType.bool())
+                                                                .executes(c -> challengePlayer(c,  DEFAULT_LEVEL, DEFAULT_LEVEL, IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), BoolArgumentType.getBool(c, "show")))
+                                                        )
                                                 )
                                         )
                                 )
@@ -107,7 +113,7 @@ public class ChallengeCommand {
                 .then(Commands.argument("player", EntityArgument.player())
                         .then(Commands.literal("level")
                                 .then(Commands.argument("setLevelTo", IntegerArgumentType.integer(1,100))
-                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, true))
+                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, DEFAULT_SHOW_PREVIEW))
 
                                 )
                         )
@@ -121,7 +127,7 @@ public class ChallengeCommand {
                                         .then(Commands.literal("handicap")
                                                 .then(Commands.argument("self", IntegerArgumentType.integer(-99,99))
                                                         .then(Commands.argument("rival", IntegerArgumentType.integer(-99,99))
-                                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), true))
+                                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), DEFAULT_SHOW_PREVIEW))
                                                         )
                                                 )
                                         )
@@ -134,10 +140,11 @@ public class ChallengeCommand {
                 .then(Commands.argument("player", EntityArgument.player())
                         .then(Commands.literal("level")
                                 .then(Commands.argument("setLevelTo", IntegerArgumentType.integer(1,100))
-                                        .then(Commands.literal("no-preview")
-                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, false))
+                                        .then(Commands.literal("showPreview")
+                                                .then(Commands.argument("show",BoolArgumentType.bool())
+                                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, BoolArgumentType.getBool(c, "show")))
+                                                )
                                         )
-
                                 )
                         )
                 );
@@ -150,8 +157,10 @@ public class ChallengeCommand {
                                         .then(Commands.literal("handicap")
                                                 .then(Commands.argument("self", IntegerArgumentType.integer(-99,99))
                                                         .then(Commands.argument("rival", IntegerArgumentType.integer(-99,99))
-                                                                .then(Commands.literal("no-preview")
-                                                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), false))
+                                                                .then(Commands.literal("showPreview")
+                                                                        .then(Commands.argument("show",BoolArgumentType.bool())
+                                                                            .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "setLevelTo"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), BoolArgumentType.getBool(c, "show")))
+                                                                        )
                                                                 )
                                                         )
                                                 )
@@ -166,7 +175,7 @@ public class ChallengeCommand {
                         .then(Commands.literal("levelRange")
                                 .then(Commands.argument("minLevel", IntegerArgumentType.integer(1,100))
                                         .then(Commands.argument("maxLevel", IntegerArgumentType.integer(1,100))
-                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, true))
+                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, DEFAULT_SHOW_PREVIEW))
                                         )
                                 )
                         )
@@ -181,7 +190,7 @@ public class ChallengeCommand {
                                                 .then(Commands.literal("handicap")
                                                         .then(Commands.argument("self", IntegerArgumentType.integer(-99,99))
                                                                 .then(Commands.argument("rival", IntegerArgumentType.integer(-99,99))
-                                                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), true))
+                                                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), DEFAULT_SHOW_PREVIEW))
                                                                 )
                                                         )
                                                 )
@@ -196,8 +205,10 @@ public class ChallengeCommand {
                         .then(Commands.literal("levelRange")
                                 .then(Commands.argument("minLevel", IntegerArgumentType.integer(1,100))
                                         .then(Commands.argument("maxLevel", IntegerArgumentType.integer(1,100))
-                                                .then(Commands.literal("no-preview")
-                                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, false))
+                                                .then(Commands.literal("showPreview")
+                                                        .then(Commands.argument("show",BoolArgumentType.bool())
+                                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), DEFAULT_HANDICAP, DEFAULT_HANDICAP, BoolArgumentType.getBool(c, "show")))
+                                                        )
                                                 )
                                         )
                                 )
@@ -213,8 +224,10 @@ public class ChallengeCommand {
                                                 .then(Commands.literal("handicap")
                                                         .then(Commands.argument("self", IntegerArgumentType.integer(-99,99))
                                                                 .then(Commands.argument("rival", IntegerArgumentType.integer(-99,99))
-                                                                        .then(Commands.literal("no-preview")
-                                                                                .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), false))
+                                                                        .then(Commands.literal("showPreview")
+                                                                                .then(Commands.argument("show",BoolArgumentType.bool())
+                                                                                        .executes(c -> challengePlayer(c, IntegerArgumentType.getInteger(c, "minLevel"), IntegerArgumentType.getInteger(c, "maxLevel"), IntegerArgumentType.getInteger(c, "self"), IntegerArgumentType.getInteger(c, "rival"), BoolArgumentType.getBool(c, "show")))
+                                                                                )
                                                                         )
                                                                 )
                                                         )
@@ -310,8 +323,8 @@ public class ChallengeCommand {
 
             String levelComponent = (minLevel == maxLevel) ? ChatFormatting.YELLOW + String.format("You have been challenged to a " + ChatFormatting.BOLD + "level %d Pokemon battle", maxLevel) : ChatFormatting.YELLOW + String.format("You have been challenged to a " + ChatFormatting.BOLD + "level %d - %d Pokemon battle", minLevel, maxLevel);
             String challengerComponent = ChatFormatting.YELLOW + " by " + challengerPlayer.getDisplayName().getString() + "!";
-            String optionsComponent = request.preview() ? "" : ChatFormatting.RED + " [NoTeamPreview]";
-            String handicapComponent = (handicapP1 == 0 && handicapP2 == 0) ? "" : ChatFormatting.BLUE + " [" + challengerPlayer.getDisplayName().getString() + " handicap of " + handicapP1 + "] [" + challengedPlayer.getDisplayName().getString() + " handicap of " + handicapP2 + "]";
+            String optionsComponent = request.preview() ? "" : ChatFormatting.GOLD + " [NoTeamPreview]";
+            String handicapComponent = (handicapP1 == 0 && handicapP2 == 0) ? "" : ChatFormatting.GREEN + " [" + challengerPlayer.getDisplayName().getString() + " handicap of " + handicapP1 + "] [" + challengedPlayer.getDisplayName().getString() + " handicap of " + handicapP2 + "]";
             MutableComponent notificationComponent = Component.literal(levelComponent + challengerComponent + optionsComponent + handicapComponent);
 
             MutableComponent interactiveComponent = Component.literal("Click to accept or deny: ");
