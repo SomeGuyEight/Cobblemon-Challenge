@@ -4,8 +4,7 @@
   "package": "com.turtlehoarder.cobblemonchallenge.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "pvp1v1PreBattleBuilderMixin",
-    "pvePreBattleBuilderMixin"
+    "BattleBuilderMixin"
   ],
   "client": [
   ],

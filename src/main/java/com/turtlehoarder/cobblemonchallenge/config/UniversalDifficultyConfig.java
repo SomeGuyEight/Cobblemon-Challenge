@@ -4,10 +4,10 @@ import com.turtlehoarder.cobblemonchallenge.CobblemonChallenge;
 import com.mojang.datafixers.util.Pair;
 
 // temp class for possible configs while testing new features
-public class DifficultyConfig {
+public class UniversalDifficultyConfig {
 
     public static SimpleConfig CONFIG;
-    private static ChallengeConfigProvider configs;
+    private static ConfigProvider configs;
     public static Boolean USE_UNIVERSAL_LEVEL;
     public static Boolean USE_UNIVERSAL_LEVEL_RANGE;
     public static Boolean USE_UNIVERSAL_HANDICAP;
@@ -19,7 +19,7 @@ public class DifficultyConfig {
 
     public static void registerConfigs() {
         CobblemonChallenge.LOGGER.info("Loading Universal Difficulty Configs");
-        configs = new ChallengeConfigProvider();
+        configs = new ConfigProvider();
         createConfigs();
         CONFIG = SimpleConfig.of(CobblemonChallenge.MODID + "-universal-difficulty-config").provider(configs).request();
         assignConfigs();
