@@ -5,11 +5,13 @@ import com.cobblemon.mod.common.api.battles.model.actor.ActorType
 import com.cobblemon.mod.common.api.tags.CobblemonItemTags
 import com.cobblemon.mod.common.battles.pokemon.BattlePokemon
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
-import com.cobblemon.mod.common.pokemon.evolution.requirements.LevelRequirement
 import com.cobblemon.mod.common.pokemon.Pokemon
+import com.cobblemon.mod.common.pokemon.evolution.requirements.LevelRequirement
 
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
+
 
 class ChallengeBattlePokemon(
     originalPokemon: Pokemon,
@@ -18,24 +20,33 @@ class ChallengeBattlePokemon(
 ) : BattlePokemon(originalPokemon) {
 
     companion object {
-        fun safeCopyOf(pokemon: Pokemon): ChallengeBattlePokemon = ChallengeBattlePokemon(
+        fun safeCopyOfChallenge(pokemon: Pokemon): ChallengeBattlePokemon = ChallengeBattlePokemon(
             originalPokemon = pokemon,
-            // TODO Need to apply changes to the effected pokemon as it is the one shown in battle
-            //  > See com.cobblemon.mod.common.battles.pokemon.BattlePokemon
-            //  > all val are based off of effectedPokemon in base class
             effectedPokemon = pokemon.clone(),
-            postBattleEntityOperation = {
-                // TODO inject post battle logic here
-                    entity -> entity.discard()
-            }
+            postBattleEntityOperation = { entity -> entity.discard() }
         )
     }
 
-    // TODO: call from mixin -> if BattlePokemon is ChallengeBattlePokemon in PokemonBattle.end() ->
-    //          redirect here else ->
-    //          call ExperienceCalculator.Calculate as normally done
-    //          original call ->
-    //          com.cobblemon.mod.common.api.pokemon.experience.ExperienceCalculator.Calculate
+    /**
+     * Method for clamping Battle Pokemon to level range & applying a handicap
+     *
+     * - [handicap] is applied AFTER level clamp to range
+     * - The [effectedPokemon] level may be outside the levelRange after the handicap is applied, but will be a hard clamped to 1-100 inclusive
+     */
+    fun applyChallengePropertiesToEffectedPokemon(minLevel: Int, maxLevel: Int, handicap: Int,heal: Boolean) : BattlePokemon {
+        val adjustedLevel = if ((originalPokemon.level < minLevel)) minLevel + handicap else (min(originalPokemon.level, maxLevel) + handicap)
+        effectedPokemon.level = if ((adjustedLevel < 1)) 1 else min(adjustedLevel,100)
+        if (heal) effectedPokemon.heal()
+        return this
+    }
+
+    /*
+     * TODO: call from mixin -> if BattlePokemon is ChallengeBattlePokemon in PokemonBattle.end() ->
+     *      redirect here else ->
+     *      call ExperienceCalculator.Calculate as normally done
+     *      original call ->
+     *      com.cobblemon.mod.common.api.pokemon.experience.ExperienceCalculator.Calculate
+     */
     fun calculateExperience(battlePokemon: BattlePokemon, opponentPokemon: BattlePokemon, participationMultiplier: Double): Int {
         // This is meant to be a division but this is due to the intended behavior of handling the 2.0 sent over from Exp. All in modern Pokémon
 

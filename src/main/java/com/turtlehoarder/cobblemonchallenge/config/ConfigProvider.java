@@ -5,7 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChallengeConfigProvider implements SimpleConfig.DefaultConfig {
+public class ConfigProvider implements SimpleConfig.DefaultConfig {
 
     private String configContents = "";
     private final List<Pair> configsList = new ArrayList<>();
